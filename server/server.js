@@ -52,8 +52,6 @@ app.post("/transaction/create", async (req, res) => {
     const scaExemption = req.body.contentBody.scaExemption;
     const transactionSource = req.body.contentBody.transactionSource;
 
-    console.log("submitSettlement", submitSettlement)
-
     // Request params
     const transactionParams = {
       amount: amountToSend,

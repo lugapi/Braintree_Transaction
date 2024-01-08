@@ -1,12 +1,16 @@
 document.getElementById("transactionSaleForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
+    if(!checkValidityForm()){
+        alert("Please fill at least AMOUNT and TOKEN or NONCE fields and if you send line items, check total amount = transaction amount");
+        console.error("Please fill at least AMOUNT and TOKEN or NONCE fields and if you send line items, check total amount = transaction amount");
+        return false
+    }
+
     const formData = new FormData(event.target);
 
     const lineItems = document.getElementById('lineItems');
-    const lineItemsValue = lineItems.checked ? editor.get(): null;
-
-    console.log('lineItemsValue', lineItemsValue)
+    const lineItemsValue = lineItems.checked ? editor.get() : null;
 
     fetch("/transaction/create", {
             method: "POST",
@@ -38,12 +42,22 @@ document.getElementById("transactionSaleForm").addEventListener("submit", functi
         });
 });
 
+editor.container.addEventListener('focusout', function () {
+    checkValidityLineItems()
+});
+
+document.getElementById('amountToSend').addEventListener('focusout', function () {
+    checkValidityLineItems()
+});
+
 //   TOGGLE NONCE TOKEN
 const paymentTypeNonce = document.getElementById('paymentTypeNonce');
 const paymentTypeToken = document.getElementById('paymentTypeToken');
 const nonceSection = document.getElementById('nonceSection');
 const tokenSection = document.getElementById('tokenSection');
 const customerSection = document.querySelector('.customer');
+const lineItems = document.getElementById('lineItems');
+const editorLineItems = document.getElementById('editorSection');
 
 paymentTypeNonce.addEventListener('change', function () {
     nonceSection.style.display = 'block';
@@ -57,13 +71,47 @@ paymentTypeToken.addEventListener('change', function () {
     customerSection.style.display = 'none';
 });
 
-const lineItems = document.getElementById('lineItems');
-const editorLineItems = document.getElementById('jsoneditor');
-
 lineItems.addEventListener('change', function () {
     if (lineItems.checked) {
-        editorLineItems.style.display = 'block';
+        editorLineItems.classList.remove('hidden');
+        checkValidityLineItems()
     } else {
-        editorLineItems.style.display = 'none';
+        editorLineItems.classList.add('hidden');
     }
 });
+
+function checkValidityLineItems() {
+    if (!lineItems.checked) {
+        return true;
+    }
+
+    const amountTransaction = Number(document.getElementById('amountToSend').value);
+    
+    return calculateLineItemsTotalAmount() === amountTransaction;
+}
+
+// check validity form : amount and token or nonce is required + if line items is checked, check total amount = transaction amount
+function checkValidityForm() {
+    const hasNonceOrToken = document.getElementById('nonceToSend').value !== '' || document.getElementById('tokenToSend').value !== '';
+    const hasAmount = document.getElementById('amountToSend').value !== '';
+    const isValidLineItems = checkValidityLineItems();
+
+    return hasNonceOrToken && hasAmount && isValidLineItems;
+}
+
+function setTransactionAmount(){
+    document.getElementById('amountToSend').value = calculateLineItemsTotalAmount()
+}
+
+function calculateLineItemsTotalAmount() {
+    const jsonContent = editor.get();
+
+    let totalAmount = 0;
+
+    jsonContent.forEach(item => {
+        item.totalAmount = item.quantity * item.unitAmount;
+        totalAmount += item.totalAmount;
+    });
+
+    return totalAmount;
+}

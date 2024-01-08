@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome To Braintree</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Load the BT component. -->
+    <script src="https://js.braintreegateway.com/web/3.91.0/js/client.min.js"></script>
+    <script src="https://js.braintreegateway.com/web/3.91.0/js/hosted-fields.min.js"></script>
+    <script src="https://js.braintreegateway.com/web/3.91.0/js/three-d-secure.min.js"></script>
+
+    <script src="commonFront.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.7.4/jsoneditor.min.js"
+        integrity="sha512-KQaWlVsZF0iPXCR8p176hVrg/rlw+smy8dpJ+vwiuvoHyGr8PTVvaAV4ZmsAYdCvMRP8e3sB9pl1mRuaunaXrg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.7.4/jsoneditor.css"
+        integrity="sha512-XmjnlPNi5tkrcqMGEG7ZOpGhny9t8fdCk0oxZxjFaqF3cl3UKv+51GgeUoY3Rf/ZaGtBvMZ9dDhceGZ1hcOyMw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <div class="container mx-auto">
+        <div class="header w-full flex flex-col gap-2">
+            <h1 class="font-bold text-2xl">Braintree Transaction Sale</h1>
+            <p>Create Braintree transaction with the below form</p>
+            <p>Documentation : <a
+                    href="https://developer.paypal.com/braintree/docs/reference/request/transaction/sale/node"
+                    target="_blank" class="underline text-blue-600 hover:text-blue-800">Braintree Transaction Sale</a>
+            </p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-2">
+            <div class="lg:col-span-1">
+                <form id="transactionSaleForm" action="./transaction/create" method="post">
+                    <div class="mb-3">
+                        <label class="block text-gray-700 font-bold mb-2">Choose Payment Type</label>
+                        <div class="flex items-center">
+                            <input type="radio" name="paymentType" value="nonce" id="paymentTypeNonce"
+                                class="form-radio h-5 w-5 text-indigo-600" checked>
+                            <label for="paymentTypeNonce" class="ml-2 block text-gray-700 font-bold">Nonce</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" name="paymentType" value="token" id="paymentTypeToken"
+                                class="form-radio h-5 w-5 text-indigo-600">
+                            <label for="paymentTypeToken" class="ml-2 block text-gray-700 font-bold">Payment method
+                                Token</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="nonceSection">
+                        <label for="nonceToSend" class="block text-gray-700 font-bold mb-2">Nonce</label>
+                        <input type="input" name="nonceToSend"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            id="nonceToSend" aria-describedby="nonceToSend">
+                        <div id="nonceToSendsb" class="mt-1 text-gray-500 text-sm">
+                            Get a nonce <a target="_blank" class="text-blue-500 hover:underline"
+                                href="{{ route('braintree.hostedfields') }}">here</a>
+                            or use a Fake one <a target="_blank" class="text-blue-500 hover:underline"
+                                href="https://developer.paypal.com/braintree/docs/reference/general/testing/php">here</a>
+                            <br>
+                            Fake nonce exemple : <span class="nonce italic font-bold">fake-valid-visa-nonce</span>
+                            <br>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="tokenSection" style="display: none;">
+                        <label for="tokenToSend" class="block text-gray-700 font-bold mb-2">Payment method Token</label>
+                        <input type="input" name="tokenToSend"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            id="tokenToSend" aria-describedby="tokenToSend">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amontToSend" class="block text-gray-700 font-bold mb-2">Amount</label>
+                        <input type="input" name="amountToSend"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            id="amountToSend" aria-describedby="amountToSend">
+                        <div id="amontToSendsb" class="mt-1 text-gray-500 text-sm">
+                            Amount : <a
+                                href="https://developer.paypal.com/braintree/docs/reference/general/testing/php#transaction-amounts"
+                                class="text-blue-500 hover:underline">here</a><br>
+                            Exemple : <span class="nonce">1500 - Success</span><br>
+                            Exemple : <span class="nonce">2001 - Processor Declined</span>
+                        </div>
+                    </div>
+
+                    <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+
+                    <h2 class="pb-4">Optionnal :</h2>
+
+                    <div class="mb-3 customer">
+                        <label for="customerIDToSend" class="block text-gray-700 font-bold mb-2">Customer ID</label>
+                        <input type="input" name="customerIDToSend"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            id="customerIDToSend" aria-describedby="customerIDToSend">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="submitSettlement" class="form-checkbox h-5 w-5 text-indigo-600"
+                                id="submitSettlement">
+                            <label for="submitSettlement" class="ml-2 block text-gray-700 font-bold">Submit for
+                                Settlement ? (capture ?)</label>
+                        </div>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center">
+                                <input type="checkbox" name="lineItems" class="form-checkbox h-5 w-5 text-indigo-600"
+                                    id="lineItems">
+                                <label for="lineItems" class="ml-2 block text-gray-700 font-bold">Add line items
+                                    ?</label>
+                            </div>
+                            <div class="hidden" id="jsoneditor"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scaExemption" class="block text-gray-700 font-bold mb-2">SCA Exemption</label>
+                        <select name="scaExemption"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="none" selected>No SCA Exemption</option>
+                            <option value="low_value">Low Value</option>
+                            <option value="secure_corporate">Secure Corporate</option>
+                            <option value="trusted_beneficiary">Trusted Beneficiary</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transactionSource" class="block text-gray-700 font-bold mb-2">Transaction
+                            Source</label>
+                        <select name="transactionSource"
+                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="none" selected>N/A</option>
+                            <option value="recurring">Recurring</option>
+                            <option value="unscheduled">Unscheduled</option>
+                            <option value="installment">Installment</option>
+                            <option value="recurring_first">Recurring First</option>
+                            <option value="moto">MOTO</option>
+                            <option value="installment_first">Installment First</option>
+                        </select>
+                    </div>
+
+                    <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
+
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+                </form>
+            </div>
+            <div class="lg:col-span-1 hidden results w-full bg-white rounded-lg p-5 overflow-auto border-2">
+
+                <div class="transactionToBo pb-4 hidden">
+                    <h2>See Braintree Transaction on backoffice</h2>
+                    <p></p>
+                </div>
+
+                <div class="mb-3">
+                    <h2>Braintree Request</h2>
+                    <pre class="braintree-request"></pre>
+                </div>
+
+                <h2>Response</h2>
+                <pre class="response"></pre>
+
+                <!-- Button that expand all sf dump -->
+                <button id="expandAll" onclick="expandAll();"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Expand all
+                </button>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    const currency = '<%= currency %>'
+    const mid = '<%= MID %>'
+</script>
+
+<script src="jsonEditor.js"></script>
+<script src="app.js"></script>
+
+</html>

@@ -1,17 +1,13 @@
 document.getElementById("transactionSaleForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
-    // Récupérer les données du formulaire
     const formData = new FormData(event.target);
 
-    // Récupérer les éléments de ligne JSONEditor
     const lineItems = document.getElementById('lineItems');
     const lineItemsValue = lineItems.checked ? editor.get(): null;
 
     console.log('lineItemsValue', lineItemsValue)
 
-
-    // Effectuer la requête POST avec fetch
     fetch("/transaction/create", {
             method: "POST",
             headers: {
@@ -64,9 +60,7 @@ paymentTypeToken.addEventListener('change', function () {
 const lineItems = document.getElementById('lineItems');
 const editorLineItems = document.getElementById('jsoneditor');
 
-// Ajoutez un écouteur d'événements pour la case à cocher lineItems
 lineItems.addEventListener('change', function () {
-    // Si la case à cocher est cochée, affichez l'éditeur JSON
     if (lineItems.checked) {
         editorLineItems.style.display = 'block';
     } else {

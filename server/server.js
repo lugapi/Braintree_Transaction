@@ -79,7 +79,6 @@ app.post("/transaction/create", async (req, res) => {
     }
     transactionParams.options.submitForSettlement = submitSettlement === 'on';
 
-    // Ajouter des éléments de ligne si lineItems est true
     if (lineItems === "on" && lineItemsContent.length > 0) {
       transactionParams.lineItems = lineItemsContent;
     }
@@ -99,8 +98,6 @@ app.post("/transaction/create", async (req, res) => {
     });
   }
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Node server listening at http://localhost:${PORT}/`);

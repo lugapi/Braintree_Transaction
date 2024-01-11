@@ -46,6 +46,8 @@ app.post("/transaction/create", async (req, res) => {
     const paymentMethodToken = req.body.contentBody.tokenToSend;
 
     const customerId = req.body.contentBody.customerIDToSend;
+    const orderId = req.body.contentBody.orderIDToSend;
+    console.log("ORDER ID", orderId);
     const submitSettlement = req.body.contentBody.submitSettlement;
     const lineItems = req.body.contentBody.lineItems;
     const lineItemsContent = req.body.lineItems;
@@ -56,6 +58,7 @@ app.post("/transaction/create", async (req, res) => {
     const transactionParams = {
       amount: amountToSend,
       options: {},
+      orderId: orderId,
       customerId: customerId,
       lineItems: lineItems || [],
     };

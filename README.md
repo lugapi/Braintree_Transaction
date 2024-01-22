@@ -18,3 +18,9 @@ To start the project, run the following command:
 ```bash
 npm start
 ```
+
+## Screenshots
+
+![transactionsale](./screenshots/transactionsale.png)
+
+<br />

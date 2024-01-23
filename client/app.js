@@ -1,7 +1,7 @@
 document.getElementById("transactionSaleForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
-    if(!checkValidityForm()){
+    if (!checkValidityForm()) {
         alert("Please fill at least AMOUNT and TOKEN or NONCE fields and if you send line items, check total amount = transaction amount");
         console.error("Please fill at least AMOUNT and TOKEN or NONCE fields and if you send line items, check total amount = transaction amount");
         return false
@@ -86,7 +86,7 @@ function checkValidityLineItems() {
     }
 
     const amountTransaction = Number(document.getElementById('amountToSend').value);
-    
+
     return calculateLineItemsTotalAmount() === amountTransaction;
 }
 
@@ -99,7 +99,7 @@ function checkValidityForm() {
     return hasNonceOrToken && hasAmount && isValidLineItems;
 }
 
-function setTransactionAmount(){
+function setTransactionAmount() {
     document.getElementById('amountToSend').value = calculateLineItemsTotalAmount()
 }
 
@@ -115,3 +115,99 @@ function calculateLineItemsTotalAmount() {
 
     return totalAmount;
 }
+
+const useSection = document.getElementById('useBulk');
+const bulkSection = document.getElementById('bulkSection');
+
+useSection.addEventListener('change', function () {
+    if (useSection.checked) {
+        bulkSection.classList.remove('hidden');
+    } else {
+        bulkSection.classList.add('hidden');
+    }
+});
+
+
+document.getElementById("transactionSaleFormBulk").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    const addPPforBulk = document.getElementById('addPPforBulk');
+    const addVISAforBulk = document.getElementById('addVISAforBulk');
+    const addMCforBulk = document.getElementById('addMCforBulk');
+
+    fetch("/transaction/bulk", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                contentBody: Object.fromEntries(formData.entries()),
+                addPPforBulk: addPPforBulk,
+                addVISAforBulk: addVISAforBulk,
+                addMCforBulk: addMCforBulk
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("full data", data);
+
+            // Clear previous results
+            document.querySelector('.resultsBulk .response').innerHTML = "";
+
+            // Create a table header with Tailwind CSS styles
+            let tableHTML = `
+  <div class="flex flex-col">
+        <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Success</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+`;
+
+            data.result.forEach(row => {
+                let pm;
+                if (row.transaction.paymentInstrumentType === 'credit_card') {
+                    pm = row.transaction.creditCard.cardType;
+                } else if (row.transaction.paymentInstrumentType === 'paypal_account') {
+                    pm = 'PayPal';
+                } else {
+                    // Handle other payment methods if needed
+                    pm = 'Unknown';
+                }
+
+                // Append table row with Tailwind CSS styles
+                tableHTML += `
+      <tr>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${pm}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.transaction.id}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.success}</td>
+      </tr>
+    `;
+            });
+
+            // Close the table and container
+            tableHTML += `
+            </tbody>
+          </table>
+        </div>
+  </div>
+`;
+
+            // Set the generated HTML
+            document.querySelector('.resultsBulk .response').innerHTML = tableHTML;
+
+
+            document.querySelector('.resultsBulk .response').innerHTML += prettyPrintObject(data.result);
+            document.querySelector('.resultsBulk').classList.remove('hidden')
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+});

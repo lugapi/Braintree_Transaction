@@ -33,7 +33,70 @@
             </p>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-2">
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1 pt-10">
+                <div class="mb-3">
+                    <div class="flex flex-col gap-2 bg-slate-200 border p-4 rounded-md shadow-sm">
+                        <form id="transactionSaleFormBulk" action="./transaction/bulk" method="post">
+                            <div class="flex items-center mb-4">
+                                <input type="checkbox" name="useBulk" class="form-checkbox h-5 w-5 text-indigo-600"
+                                    id="useBulk">
+                                <label for="useBulk" class="ml-2 block text-gray-700 font-bold">Bulk transactions
+                                    ?</label>
+                            </div>
+                            <div id="bulkSection" class="flex flex-col gap-2 mb-3 hidden">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex flex-col gap-4">
+                                        <label for="numberBulk" class="block text-gray-700 font-bold mb-2">How many
+                                            transactions
+                                            ?</label>
+                                        <input type="number" name="numberBulk"
+                                            class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                            id="numberBulk" step="1" min="1" max="100" value="1"
+                                            aria-describedby="numberBulk">
+                                        <div id="numberBulk" class="mt-1 text-gray-500 text-sm">
+                                            <!-- Amount : <a
+                                                href="https://developer.paypal.com/braintree/docs/reference/general/testing/php#transaction-amounts"
+                                                class="text-blue-500 hover:underline">here</a><br>
+                                                Exemple : <span class="nonce">1500 - Success</span><br>
+                                                Exemple : <span class="nonce">2001 - Processor Declined</span> -->
+                                            Input how many transaction you want to create
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="flex flex-col gap-2">
+                                            <h3>Which type of transaction ?</h3>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" name="addPPforBulk"
+                                                    class="form-checkbox h-5 w-5 text-indigo-600" id="addPPforBulk">
+                                                <label for="addPPforBulk"
+                                                    class="ml-2 block text-gray-700 font-bold">PayPal</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" name="addVISAforBulk"
+                                                    class="form-checkbox h-5 w-5 text-indigo-600" id="addVISAforBulk">
+                                                <label for="addVISAforBulk"
+                                                    class="ml-2 block text-gray-700 font-bold">VISA</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" name="addMCforBulk"
+                                                    class="form-checkbox h-5 w-5 text-indigo-600" id="addMCforBulk">
+                                                <label for="addMCforBulk"
+                                                    class="ml-2 block text-gray-700 font-bold">MASTERCARD<label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                    id="submitTS">Bulk submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <hr class="h-px mt-8 mb-2 bg-gray-200 border-0 dark:bg-gray-700">
+                <hr class="h-px mb-8 bg-gray-200 border-0 dark:bg-gray-700">
+
                 <form id="transactionSaleForm" action="./transaction/create" method="post">
                     <div class="mb-3">
                         <label class="block text-gray-700 font-bold mb-2">Choose Payment Type</label>
@@ -55,9 +118,7 @@
                             class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             id="nonceToSend" aria-describedby="nonceToSend">
                         <div id="nonceToSendsb" class="mt-1 text-gray-500 text-sm">
-                            Get a nonce <a target="_blank" class="text-blue-500 hover:underline"
-                                href="{{ route('braintree.hostedfields') }}">here</a>
-                            or use a Fake one <a target="_blank" class="text-blue-500 hover:underline"
+                            Use a Fake one <a target="_blank" class="text-blue-500 hover:underline"
                                 href="https://developer.paypal.com/braintree/docs/reference/general/testing/php">here</a>
                             <br>
                             Fake nonce exemple : <span class="nonce italic font-bold">fake-valid-visa-nonce</span>
@@ -124,10 +185,13 @@
                             </div>
                             <div id="editorSection" class="hidden flex flex-col gap-4">
                                 <!-- small warning text -->
-                                <p class="text-red-500 font-bold py-4">Warning : The sum of the line items amount must be equal to the transaction amount</p>
+                                <p class="text-red-500 font-bold py-4">Warning : The sum of the line items amount must
+                                    be equal to the transaction amount</p>
                                 <div id="jsoneditor"></div>
                                 <!-- div for a button to set transaction amount to the sum of line items -->
-                                <div id="setTransactionAmount" onclick="setTransactionAmount()" class="py-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer">Set Transaction Amount to Sum of Line Items</div>
+                                <div id="setTransactionAmount" onclick="setTransactionAmount()"
+                                    class="py-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer">
+                                    Set Transaction Amount to Sum of Line Items</div>
                             </div>
                         </div>
                     </div>
@@ -160,9 +224,12 @@
 
                     <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
 
-                    <button type="submit"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" id="submitTS">Submit</button>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        id="submitTS">Submit</button>
                 </form>
+            </div>
+            <div class="lg:col-span-1 hidden resultsBulk w-full bg-white rounded-lg p-5 overflow-auto border-2">
+                <pre class="response"></pre>
             </div>
             <div class="lg:col-span-1 hidden results w-full bg-white rounded-lg p-5 overflow-auto border-2">
 

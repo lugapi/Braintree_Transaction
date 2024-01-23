@@ -216,6 +216,7 @@ function displayAndFormatBulkDatas(data) {
 `;
 
             data.result.forEach(row => {
+                const urlToBo = "https://sandbox.braintreegateway.com/merchants/" + mid + "//transactions/" + row.transaction.id
                 let pm;
                 if (row.transaction.paymentInstrumentType === 'credit_card') {
                     pm = row.transaction.creditCard.cardType;
@@ -230,7 +231,7 @@ function displayAndFormatBulkDatas(data) {
                 tableHTML += `
       <tr>
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${pm}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.transaction.id}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800"><a class="text-blue-500 hover:text-blue-700 underline" target="_blank" href="${urlToBo}">${row.transaction.id}</a></td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.success}</td>
       </tr>
     `;

@@ -170,7 +170,6 @@ app.post("/transaction/create", async (req, res) => {
 
 app.get("/transaction/bulk/sample", (req, res) => {
   // Generate the sample content (you can adapt this according to your logic)
-  // const sampleContent = "amount,nonce,customerID\n100,fake-valid-nonce-1,cust123\n200,fake-valid-nonce-2,cust456";
   const sampleContent = "amount,nonce\n100,fake-valid-visa-nonce\n200,fake-paypal-one-time-nonce\n300,fake-valid-mastercard-nonce";
 
   res.set('Content-Type', 'text/csv');

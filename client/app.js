@@ -120,14 +120,17 @@ function calculateLineItemsTotalAmount() {
 const useSection = document.getElementById('useBulk');
 const bulkSection = document.getElementById('bulkSection');
 const fileBulkSection = document.getElementById('fileBulk');
+const formTS = document.getElementById('transactionSaleForm');
 
 useSection.addEventListener('change', function () {
     if (useSection.checked) {
         bulkSection.classList.remove('hidden');
         fileBulkSection.classList.remove('hidden');
+        formTS.classList.add('hidden');
     } else {
         bulkSection.classList.add('hidden');
         fileBulkSection.classList.add('hidden');
+        formTS.classList.remove('hidden');
     }
 });
 

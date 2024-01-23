@@ -38,6 +38,61 @@ app.get("/", async (req, res) => {
   })
 });
 
+app.post("/transaction/bulk", async (req, res) => {
+  console.log("req.body", req.body);
+  try {
+    const numberOfTransactions = parseInt(req.body.contentBody.numberBulk);
+    const bulkResults = [];
+
+    // Create a table of promises for transaction
+    const transactionPromises = Array.from({
+      length: numberOfTransactions
+    }, async (_, i) => {
+      const randomAmount = Math.floor(Math.random() * 1000) + 1;
+
+      const orderId = "orderFromBulk-" + Math.floor(Math.random() * 1000000) + 1;
+
+      // List of possible nonces
+      const possibleNonces = ['fake-valid-visa-nonce', 'fake-valid-mastercard-nonce', 'fake-processor-declined-visa-nonce', 'fake-processor-declined-mastercard-nonce'];
+
+      // If addPPforBulk == 'on' add a PayPal payment method
+      if (req.body.contentBody.addPPforBulk === 'on') {
+        possibleNonces.push('fake-paypal-one-time-nonce');
+      }
+
+      // Choose a random nonce from the list
+      const randomNonce = possibleNonces[Math.floor(Math.random() * possibleNonces.length)];
+
+      const transactionParams = {
+        amount: randomAmount,
+        paymentMethodNonce: randomNonce,
+        orderId: orderId,
+        options: {},
+        // Add additional transaction parameters
+      };
+
+      console.log("transactionParams", transactionParams);
+
+      const transactionResult = await gateway.transaction.sale(transactionParams);
+      bulkResults.push(transactionResult);
+    });
+
+    // Wait for all promises to resolve
+    await Promise.all(transactionPromises);
+
+    res.json({
+      result: bulkResults,
+    });
+
+  } catch (error) {
+    console.error("Failed to process bulk transactions:", error);
+    res.status(500).json({
+      error: "Failed to process bulk transactions."
+    });
+  }
+});
+
+
 app.post("/transaction/create", async (req, res) => {
   try {
     const amountToSend = req.body.contentBody.amountToSend;

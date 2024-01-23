@@ -24,3 +24,7 @@ npm start
 ![transactionsale](./screenshots/transactionsale.png)
 
 <br />
+
+![transactionsalebulk](./screenshots/transactionsalebulk.png)
+
+<br />

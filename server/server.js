@@ -53,11 +53,19 @@ app.post("/transaction/bulk", async (req, res) => {
       const orderId = "orderFromBulk-" + Math.floor(Math.random() * 1000000) + 1;
 
       // List of possible nonces
-      const possibleNonces = ['fake-valid-visa-nonce', 'fake-valid-mastercard-nonce', 'fake-processor-declined-visa-nonce', 'fake-processor-declined-mastercard-nonce'];
+      const possibleNonces = [];
 
       // If addPPforBulk == 'on' add a PayPal payment method
       if (req.body.contentBody.addPPforBulk === 'on') {
         possibleNonces.push('fake-paypal-one-time-nonce');
+      }
+      if (req.body.contentBody.addVISAforBulk === 'on') {
+        possibleNonces.push('fake-valid-visa-nonce');
+        possibleNonces.push('fake-processor-declined-visa-nonce');
+      }
+      if (req.body.contentBody.addMCforBulk === 'on') {
+        possibleNonces.push('fake-valid-mastercard-nonce');
+        possibleNonces.push('fake-processor-declined-mastercard-nonce');
       }
 
       // Choose a random nonce from the list

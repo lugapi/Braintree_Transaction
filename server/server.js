@@ -1,6 +1,10 @@
+// server.js
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import multer from "multer";
+import fs from "fs";
+import csv from "csv-parser";
 
 import braintree from "braintree";
 
@@ -162,6 +166,93 @@ app.post("/transaction/create", async (req, res) => {
     });
   }
 });
+
+
+app.get("/transaction/bulk/sample", (req, res) => {
+  // Generate the sample content (you can adapt this according to your logic)
+  // const sampleContent = "amount,nonce,customerID\n100,fake-valid-nonce-1,cust123\n200,fake-valid-nonce-2,cust456";
+  const sampleContent = "amount,nonce\n100,fake-valid-nonce-1\n200,fake-valid-nonce-2";
+
+  res.set('Content-Type', 'text/csv');
+  res.set('Content-Disposition', 'attachment; filename=bulk_sample.csv');
+  res.send(sampleContent);
+});
+
+const upload = multer({
+  dest: 'uploads/'
+});
+
+app.post("/transaction/bulk/upload", upload.single('bulkFile'), async (req, res) => {
+  // Process the uploaded file here
+  const uploadedFile = req.file;
+  console.log(uploadedFile);
+
+  // Create an array to store the results of bulk transactions
+  const bulkResults = [];
+
+  // Create a promise for each transaction
+  const transactionPromises = [];
+
+  // Read the CSV file
+  fs.createReadStream(uploadedFile.path)
+      .pipe(csv())
+      .on('data', (row) => {
+          // Process each row here
+          console.log("Processing row:", row);
+
+          const randomAmount = parseInt(row.amount);
+          const orderId = row.orderId || ("orderFromBulk-" + Math.floor(Math.random() * 1000000) + 1);
+          const nonceFromTheClient = row.nonce;
+
+          // Request params
+          const transactionParams = {
+              amount: randomAmount,
+              options: {},
+              orderId: orderId,
+              paymentMethodNonce: nonceFromTheClient,
+              // Add other transaction parameters as needed
+          };
+
+          // Add the promise for this transaction to the array
+          transactionPromises.push(
+              gateway.transaction.sale(transactionParams)
+                  .then((transactionResult) => {
+                      // console.log("transactionResult ---> ", transactionResult);
+                      bulkResults.push(transactionResult);
+                  })
+                  .catch((error) => {
+                      console.error("Error processing row:", error);
+                      // Handle the error for this row (you can choose to continue or stop processing)
+                  })
+          );
+      })
+      .on('end', () => {
+          // Every line has been processed
+          console.log('CSV file successfully processed.');
+
+          // Wait for all promises to resolve
+          Promise.all(transactionPromises)
+              .then(() => {
+                  // Delete the uploaded file
+                  fs.unlinkSync(uploadedFile.path);
+
+                  // Respond with the results of bulk transactions
+                  res.json({
+                      message: "File uploaded successfully",
+                      file: uploadedFile,
+                      result: bulkResults,
+                  });
+              })
+              .catch((error) => {
+                  console.error("Error processing bulk transactions:", error);
+                  res.status(500).json({
+                      error: "Failed to process bulk transactions."
+                  });
+              });
+      });
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`Node server listening at http://localhost:${PORT}/`);

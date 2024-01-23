@@ -1,3 +1,4 @@
+// app.js
 document.getElementById("transactionSaleForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
@@ -118,12 +119,15 @@ function calculateLineItemsTotalAmount() {
 
 const useSection = document.getElementById('useBulk');
 const bulkSection = document.getElementById('bulkSection');
+const fileBulkSection = document.getElementById('fileBulk');
 
 useSection.addEventListener('change', function () {
     if (useSection.checked) {
         bulkSection.classList.remove('hidden');
+        fileBulkSection.classList.remove('hidden');
     } else {
         bulkSection.classList.add('hidden');
+        fileBulkSection.classList.add('hidden');
     }
 });
 
@@ -151,7 +155,44 @@ document.getElementById("transactionSaleFormBulk").addEventListener("submit", fu
         })
         .then(response => response.json())
         .then(data => {
-            console.log("full data", data);
+            displayAndFormatBulkDatas(data);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+});
+
+document.getElementById("bulkUploadForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+
+    fetch("/transaction/bulk/upload", {
+        method: "POST",
+        body: formData  // Utilisez directement le FormData ici
+    })
+    .then(response => response.json())
+    .then(data => {
+        
+        if (data.message) {
+            alert(data.message);
+        }
+
+        // You can also update the DOM or perform other actions based on the result
+        displayAndFormatBulkDatas(data);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+
+        // Handle errors as needed, for example, display an error message to the user
+        alert("Error occurred during form submission.");
+    });
+});
+
+
+
+function displayAndFormatBulkDatas(data) {
+    console.log("full data", data);
 
             // Clear previous results
             document.querySelector('.resultsBulk .response').innerHTML = "";
@@ -206,8 +247,4 @@ document.getElementById("transactionSaleFormBulk").addEventListener("submit", fu
 
             document.querySelector('.resultsBulk .response').innerHTML += prettyPrintObject(data.result);
             document.querySelector('.resultsBulk').classList.remove('hidden')
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-});
+}

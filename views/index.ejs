@@ -1,3 +1,4 @@
+<!-- index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -88,9 +89,20 @@
                                 </div>
                                 <button type="submit"
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                    id="submitTS">Bulk submit</button>
+                                    id="submitTSBulk">Bulk submit</button>
                             </div>
                         </form>
+                        <div id="fileBulk" class="flex flex-col gap-2 bg-red-200 hidden">
+                            <a href="/transaction/bulk/sample" download="bulk_sample.csv">Télécharger
+                                l'échantillon</a>
+                            <form id="bulkUploadForm" class="flex flex-col gap-2" action="/transaction/bulk/upload" method="post"
+                                enctype="multipart/form-data">
+                                <input type="file" name="bulkFile" accept=".csv">
+                                <button type="submit"
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                    id="submitTSBulk">Submit file</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 

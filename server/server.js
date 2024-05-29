@@ -83,6 +83,16 @@ app.post("/transaction/bulk", async (req, res) => {
         // Add additional transaction parameters
       };
 
+      // Randomly choose if the transaction should be submitted for settlement
+      if (Math.random() > 0.5) {
+        transactionParams.options.submitForSettlement = true;
+      }
+      // Randomly choose if the transaction should be stored in the vault
+      if (Math.random() > 0.5) {
+        transactionParams.options.storeInVault = true;
+      }
+      // Add other transaction parameters as needed
+
       console.log("transactionParams", transactionParams);
 
       const transactionResult = await gateway.transaction.sale(transactionParams);
@@ -120,6 +130,7 @@ app.post("/transaction/create", async (req, res) => {
     const lineItemsContent = req.body.lineItems;
     const scaExemption = req.body.contentBody.scaExemption;
     const transactionSource = req.body.contentBody.transactionSource;
+    const savePM = req.body.contentBody.savePM;
 
     // Request params
     const transactionParams = {
@@ -135,6 +146,9 @@ app.post("/transaction/create", async (req, res) => {
       transactionParams.paymentMethodNonce = nonceFromTheClient;
     } else if (paymentType === 'token') {
       transactionParams.paymentMethodToken = paymentMethodToken;
+    } else if (paymentType === "nonceCVV") {
+      transactionParams.paymentMethodToken = paymentMethodToken;
+      transactionParams.paymentMethodNonce = nonceFromTheClient;
     } else {
       throw new Error('Invalid paymentType');
     }
@@ -147,13 +161,18 @@ app.post("/transaction/create", async (req, res) => {
     }
     transactionParams.options.submitForSettlement = submitSettlement === 'on';
 
+    if (savePM === 'on') {
+      transactionParams.options.storeInVaultOnSuccess = true;
+    }
+
     if (lineItems === "on" && lineItemsContent.length > 0) {
       transactionParams.lineItems = lineItemsContent;
     }
 
     const transactionResult = await gateway.transaction.sale(transactionParams);
 
-    console.log("Braintree Request:", transactionResult);
+    console.log("Braintree transactionParams:", transactionParams);
+    // console.log("Braintree Request:", transactionResult);
 
     res.json({
       result: transactionResult,
@@ -170,7 +189,10 @@ app.post("/transaction/create", async (req, res) => {
 
 app.get("/transaction/bulk/sample", (req, res) => {
   // Generate the sample content (you can adapt this according to your logic)
-  const sampleContent = "amount,nonce\n100,fake-valid-visa-nonce\n200,fake-paypal-one-time-nonce\n300,fake-valid-mastercard-nonce";
+  let sampleContent = "amount,nonce,submitForSettlement,storeInVault\n";
+  sampleContent += "100,fake-valid-visa-nonce,true,false\n";
+  sampleContent += "200,fake-paypal-one-time-nonce,true,true\n";
+  sampleContent += "300,fake-valid-mastercard-nonce,false,false";
 
   res.set('Content-Type', 'text/csv');
   res.set('Content-Disposition', 'attachment; filename=bulk_sample.csv');
@@ -194,61 +216,67 @@ app.post("/transaction/bulk/upload", upload.single('bulkFile'), async (req, res)
 
   // Read the CSV file
   fs.createReadStream(uploadedFile.path)
-      .pipe(csv())
-      .on('data', (row) => {
-          // Process each row here
-          console.log("Processing row:", row);
+    .pipe(csv())
+    .on('data', (row) => {
 
-          const randomAmount = parseInt(row.amount);
-          const orderId = row.orderId || ("orderFromBulk-" + Math.floor(Math.random() * 1000000) + 1);
-          const nonceFromTheClient = row.nonce;
+      const randomAmount = parseInt(row.amount);
+      const orderId = row.orderId || ("orderFromBulk-" + Math.floor(Math.random() * 1000000) + 1);
+      const nonceFromTheClient = row.nonce;
+      const submitForSettlement = row.submitForSettlement;
+      const storeInVault = row.storeInVault;
 
-          // Request params
-          const transactionParams = {
-              amount: randomAmount,
-              options: {},
-              orderId: orderId,
-              paymentMethodNonce: nonceFromTheClient,
-              // Add other transaction parameters as needed
-          };
+      // Process each row here
+      console.log("Processing row:", row);
 
-          // Add the promise for this transaction to the array
-          transactionPromises.push(
-              gateway.transaction.sale(transactionParams)
-                  .then((transactionResult) => {
-                      // console.log("transactionResult ---> ", transactionResult);
-                      bulkResults.push(transactionResult);
-                  })
-                  .catch((error) => {
-                      console.error("Error processing row:", error);
-                      // Handle the error for this row (you can choose to continue or stop processing)
-                  })
-          );
-      })
-      .on('end', () => {
-          // Every line has been processed
-          console.log('CSV file successfully processed.');
+      // Request params
+      let transactionParams = {
+        amount: randomAmount,
+        orderId: orderId,
+        paymentMethodNonce: nonceFromTheClient,
+        options: {
+          submitForSettlement: submitForSettlement,
+        }
+        // Add other transaction parameters as needed
+      };
 
-          // Wait for all promises to resolve
-          Promise.all(transactionPromises)
-              .then(() => {
-                  // Delete the uploaded file
-                  fs.unlinkSync(uploadedFile.path);
+      transactionParams.options.storeInVaultOnSuccess = storeInVault;
 
-                  // Respond with the results of bulk transactions
-                  res.json({
-                      message: "File uploaded successfully",
-                      file: uploadedFile,
-                      result: bulkResults,
-                  });
-              })
-              .catch((error) => {
-                  console.error("Error processing bulk transactions:", error);
-                  res.status(500).json({
-                      error: "Failed to process bulk transactions."
-                  });
-              });
-      });
+      // Add the promise for this transaction to the array
+      transactionPromises.push(
+        gateway.transaction.sale(transactionParams)
+        .then((transactionResult) => {
+          bulkResults.push(transactionResult);
+        })
+        .catch((error) => {
+          console.error("Error processing row:", error);
+          // Handle the error for this row (you can choose to continue or stop processing)
+        })
+      );
+    })
+    .on('end', () => {
+      // Every line has been processed
+      console.log('CSV file successfully processed.');
+
+      // Wait for all promises to resolve
+      Promise.all(transactionPromises)
+        .then(() => {
+          // Delete the uploaded file
+          fs.unlinkSync(uploadedFile.path);
+
+          // Respond with the results of bulk transactions
+          res.json({
+            message: "File uploaded successfully",
+            file: uploadedFile,
+            result: bulkResults,
+          });
+        })
+        .catch((error) => {
+          console.error("Error processing bulk transactions:", error);
+          res.status(500).json({
+            error: "Failed to process bulk transactions."
+          });
+        });
+    });
 });
 
 

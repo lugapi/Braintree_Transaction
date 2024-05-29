@@ -54,22 +54,33 @@ document.getElementById('amountToSend').addEventListener('focusout', function ()
 //   TOGGLE NONCE TOKEN
 const paymentTypeNonce = document.getElementById('paymentTypeNonce');
 const paymentTypeToken = document.getElementById('paymentTypeToken');
+const paymentTypeNonceCVV = document.getElementById('paymentTypeNonceCVV');
 const nonceSection = document.getElementById('nonceSection');
 const tokenSection = document.getElementById('tokenSection');
 const customerSection = document.querySelector('.customer');
 const lineItems = document.getElementById('lineItems');
 const editorLineItems = document.getElementById('editorSection');
+const savePM = document.getElementById('savePM');
 
 paymentTypeNonce.addEventListener('change', function () {
     nonceSection.style.display = 'block';
     tokenSection.style.display = 'none';
     customerSection.style.display = 'block';
+    document.getElementById('nonceToSendsb').style.display = 'block';
 });
 
 paymentTypeToken.addEventListener('change', function () {
     nonceSection.style.display = 'none';
     tokenSection.style.display = 'block';
     customerSection.style.display = 'none';
+    document.getElementById('nonceToSendsb').style.display = 'block';
+});
+
+paymentTypeNonceCVV.addEventListener('change', function () {
+    nonceSection.style.display = 'block';
+    tokenSection.style.display = 'block';
+    customerSection.style.display = 'none';
+    document.getElementById('nonceToSendsb').style.display = 'none';
 });
 
 lineItems.addEventListener('change', function () {
@@ -171,25 +182,25 @@ document.getElementById("bulkUploadForm").addEventListener("submit", function (e
     const formData = new FormData(event.target);
 
     fetch("/transaction/bulk/upload", {
-        method: "POST",
-        body: formData  // Utilisez directement le FormData ici
-    })
-    .then(response => response.json())
-    .then(data => {
-        
-        if (data.message) {
-            alert(data.message);
-        }
+            method: "POST",
+            body: formData // Utilisez directement le FormData ici
+        })
+        .then(response => response.json())
+        .then(data => {
 
-        // You can also update the DOM or perform other actions based on the result
-        displayAndFormatBulkDatas(data);
-    })
-    .catch(error => {
-        console.error("Error:", error);
+            if (data.message) {
+                alert(data.message);
+            }
 
-        // Handle errors as needed, for example, display an error message to the user
-        alert("Error occurred during form submission.");
-    });
+            // You can also update the DOM or perform other actions based on the result
+            displayAndFormatBulkDatas(data);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+
+            // Handle errors as needed, for example, display an error message to the user
+            alert("Error occurred during form submission.");
+        });
 });
 
 
@@ -197,58 +208,62 @@ document.getElementById("bulkUploadForm").addEventListener("submit", function (e
 function displayAndFormatBulkDatas(data) {
     console.log("full data", data);
 
-            // Clear previous results
-            document.querySelector('.resultsBulk .response').innerHTML = "";
+    // Clear previous results
+    document.querySelector('.resultsBulk .response').innerHTML = "";
 
-            // Create a table header with Tailwind CSS styles
-            let tableHTML = `
-  <div class="flex flex-col">
-        <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+    // Create a table header with Tailwind CSS styles
+    let tableHTML = `
+  <div class="resume flex flex-col">
+        <div class="shadow overflow-auto border-b border-gray-200 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Success</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">STATUS</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
 `;
 
-            data.result.forEach(row => {
-                const urlToBo = "https://sandbox.braintreegateway.com/merchants/" + mid + "//transactions/" + row.transaction.id
-                let pm;
-                if (row.transaction.paymentInstrumentType === 'credit_card') {
-                    pm = row.transaction.creditCard.cardType;
-                } else if (row.transaction.paymentInstrumentType === 'paypal_account') {
-                    pm = 'PayPal';
-                } else {
-                    // Handle other payment methods if needed
-                    pm = 'Unknown';
-                }
+    data.result.forEach(row => {
+        const urlToBo = "https://sandbox.braintreegateway.com/merchants/" + mid + "//transactions/" + row.transaction.id
+        let pm;
+        if (row.transaction.paymentInstrumentType === 'credit_card') {
+            pm = row.transaction.creditCard.cardType;
+        } else if (row.transaction.paymentInstrumentType === 'paypal_account') {
+            pm = 'PayPal';
+        } else {
+            // Handle other payment methods if needed
+            pm = 'Unknown';
+        }
 
-                // Append table row with Tailwind CSS styles
-                tableHTML += `
+        // Append table row with Tailwind CSS styles
+        tableHTML += `
       <tr>
-        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${pm}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800"><a class="text-blue-500 hover:text-blue-700 underline" target="_blank" href="${urlToBo}">${row.transaction.id}</a></td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${row.transaction.orderId}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${pm}</td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.success}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${row.transaction.status}</td>
       </tr>
     `;
-            });
+    });
 
-            // Close the table and container
-            tableHTML += `
+    // Close the table and container
+    tableHTML += `
             </tbody>
           </table>
         </div>
   </div>
 `;
 
-            // Set the generated HTML
-            document.querySelector('.resultsBulk .response').innerHTML = tableHTML;
+    // Set the generated HTML
+    document.querySelector('.resultsBulk .response').innerHTML = tableHTML;
 
 
-            document.querySelector('.resultsBulk .response').innerHTML += prettyPrintObject(data.result);
-            document.querySelector('.resultsBulk').classList.remove('hidden')
+    document.querySelector('.resultsBulk .response').innerHTML += prettyPrintObject(data.result);
+    document.querySelector('.resultsBulk').classList.remove('hidden')
 }

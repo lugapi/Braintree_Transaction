@@ -38,11 +38,11 @@
                 <div class="mb-3">
                     <div class="flex flex-col gap-2 bg-slate-200 border p-4 rounded-md shadow-sm">
                         <form id="transactionSaleFormBulk" action="./transaction/bulk" method="post">
-                            <div class="flex items-center mb-4">
+                            <div class="flex items-center">
                                 <input type="checkbox" name="useBulk" class="form-checkbox h-5 w-5 text-indigo-600"
                                     id="useBulk">
-                                <label for="useBulk" class="ml-2 block text-gray-700 font-bold">Bulk transactions
-                                    ?</label>
+                                <label for="useBulk" class="ml-2 block text-gray-700 font-bold">Bulk
+                                    transactions</label>
                             </div>
                             <div id="bulkSection" class="flex flex-col gap-2 mb-3 hidden">
                                 <div class="flex items-center gap-4">
@@ -93,9 +93,11 @@
                             </div>
                         </form>
                         <div id="fileBulk" class="flex flex-col gap-2 hidden pt-8">
-                            <a href="/transaction/bulk/sample" download="bulk_sample.csv" class="bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max inline-block">Download sample</a>                            
-                            <form id="bulkUploadForm" class="flex flex-col gap-2" action="/transaction/bulk/upload" method="post"
-                                enctype="multipart/form-data">
+                            <a href="/transaction/bulk/sample" download="bulk_sample.csv"
+                                class="bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max inline-block">Download
+                                sample</a>
+                            <form id="bulkUploadForm" class="flex flex-col gap-2" action="/transaction/bulk/upload"
+                                method="post" enctype="multipart/form-data">
                                 <input type="file" name="bulkFile" accept=".csv">
                                 <button type="submit"
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -121,6 +123,24 @@
                                 class="form-radio h-5 w-5 text-indigo-600">
                             <label for="paymentTypeToken" class="ml-2 block text-gray-700 font-bold">Payment method
                                 Token</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" name="paymentType" value="nonceCVV" id="paymentTypeNonceCVV"
+                                class="form-radio h-5 w-5 text-indigo-600">
+                            <label for="paymentTypeNonceCVV" class="ml-2 block text-gray-700 font-bold">Nonce
+                                CVV</label>
+                            <div class="mx-4 mt-1 text-gray-500 text-sm">
+                                <a target="_blank" class="text-blue-500 hover:underline"
+                                    href="https://developer.paypal.com/braintree/docs/reference/request/transaction/sale/node#using-a-cvv-only-nonce">Using
+                                    a CVV-only nonce</a> //
+                                <a target="_blank" class="text-blue-500 hover:underline"
+                                    href="https://developer.paypal.com/braintree/docs/guides/hosted-fields/faq/javascript/v3#can-i-verify-the-cvv-when-a-customer-uses-or-updates-a-vaulted-card">Verify
+                                    the CVV</a> //
+                                <a target="_blank" class="text-blue-500 hover:underline"
+                                    href="https://developer.paypal.com/braintree/docs/reference/general/testing/php#cvv-only-nonces">CVV-only
+                                    nonces</a>
+                            </div>
+
                         </div>
                     </div>
                     <div class="mb-3" id="nonceSection">
@@ -162,6 +182,14 @@
 
                     <h2 class="pb-4">Optionnal :</h2>
 
+                    <div class="mb-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="savePM" class="form-checkbox h-5 w-5 text-indigo-600"
+                                id="savePM">
+                            <label for="savePM" class="ml-2 block text-gray-700 font-bold">Save Payment Method</label>
+                        </div>
+                    </div>
+
                     <div class="mb-3 customer">
                         <label for="customerIDToSend" class="block text-gray-700 font-bold mb-2">Customer ID</label>
                         <input type="input" name="customerIDToSend"
@@ -184,7 +212,6 @@
                                 Settlement ? (capture ?)</label>
                         </div>
                     </div>
-
 
                     <div class="mb-3">
                         <div class="flex flex-col gap-2">

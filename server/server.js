@@ -121,6 +121,7 @@ app.post("/transaction/create", async (req, res) => {
     const paymentType = req.body.contentBody.paymentType;
     const nonceFromTheClient = req.body.contentBody.nonceToSend;
     const paymentMethodToken = req.body.contentBody.tokenToSend;
+    const merchantAccountId = req.body.contentBody.merchantAccountId;
 
     const customerId = req.body.contentBody.customerIDToSend;
     const orderId = req.body.contentBody.orderIDToSend;
@@ -153,6 +154,9 @@ app.post("/transaction/create", async (req, res) => {
       throw new Error('Invalid paymentType');
     }
 
+    if(merchantAccountId !== '') {
+      transactionParams.merchantAccountId = merchantAccountId;
+    }
     if (scaExemption !== 'none') {
       transactionParams.scaExemption = scaExemption;
     }
